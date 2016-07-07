@@ -1,94 +1,63 @@
 todomvc-angular
 ===============
 
-## 0. 우리가 만들 Todo 앱 미리보기
+## 미리보기
+
+이번 강의에서 만들 결과물을 미리 보자.
+
+* 투두(Todo) 목록을 조회
+* 추가, 편집, 삭제, 완료 처리 (CRUD)
+* 투두의 상태에 따라 completed(완료), active(진행중)로 필터링
 
 ![screenshot](screenshot-preview.png)
 
-* 투두(Todo) 목록을 웹페이지에 보여줌
-* 투두의 조회, 추가, 편비, 삭제, 완료 처리할 수 있음 (CRUD)
-* 투두의 상태에 따라 completed, active로 필터링 할 수 있음
-* 투두 데이터는 서버에서 관리함
+## 프로젝트 구조
 
-
-### 프로젝트 구조
+### 백엔드
 
 * 서버는 [Node.js](https://nodejs.org/en/)기반의 [Express.js](http://expressjs.com) 웹프레임웍을 사용함
-* 서버는 1) html, css, javascript 등의 정적 파일을 제공하고 2) ajax 기능을 수행할 api를 제공함  
+* 서버는 1) html, css, javascript 등의 정적 파일을 호스팅하고 2) ajax 기능을 수행할 api를 제공함  
+
+### 프론트엔드
+
 * 웹페이지는 [Angular.js](https://angularjs.org)를 사용한 하나의 페이지(index.html)로 구성됨
 * 앵귤러 컨트롤러로 웹페이지를 조작하고 앵귤러 서비스를 통해 백엔드 api와 통신함
 
 ![screenshot-structure](screenshot-structure.jpg)
 
-출처: [https://scotch.io/tutorials/creating-a-single-page-todo-app-with-node-and-angular](https://scotch.io/tutorials/creating-a-single-page-todo-app-with-node-and-angular)
+## 개발 환경
 
-
-## 1. 노드 설치
+### Node.js
 
 * [https://nodejs.org/en/](https://nodejs.org/en/)에서 다운로드 후 설치
-* 설치 확인:
-
-```
-$ node --version
-$ which node
-```
-
-* 간단한 노드 스크립트 확인:
-
-```
-> console.log('hello world!')
-hello world!
-
-> var name = 'Chris'
-> name
-'Chris'
-```
-
-```
-> const name = 'Chris'
-> name
-'Chris'
-
-> name = 'Mars'
-'Mars'
-
-> name
-'Chris'
-```
+* 웹서버 구동과 프로젝트 관리를 위해 사용
 
 ### NPM
 
 * Node Package Manager
-* 노드 패키지를 프로젝트에 추가, 삭제하거나 만든 패키지를 배포할 때 사용함.
-* 본 프로젝트에서는
-  * angularjs등 외부 라이브러리를 설치하고
-  * 노드 서버를 구동하는데 사용함
+* 노드 패키지를 프로젝트에 추가, 삭제하거나 직접 작성한 패키지를 배포할 때 사용함.
+* 본 프로젝트에서는 angularjs등 외부 라이브러리 설치시 사용
 * 노드를 설치하면 자동으로 NPM도 설치됨
-* 설치확인:
+* *이후 Bower, Gulp 등 개발 툴은 상황에 따라 추가 설명할 예정*
+
+## 프로젝트 초기화
+
+* Npm으로 프로젝트 초기화
 
 ```
-$ npm --version
-$ which npm
-```
-
-*  NPM으로 프로젝트 생성:
-
-```
+$ mkdir todomvc && cd todomvc
 $ npm init
 ```
 
+* package.json: 프로젝트 정보를 담고 있음.
+* 특히 dependencies에는 프로젝트에서 사용하는 외부 라이브러리 정보가 기록됨
 
-## 2. 앵귤러 로딩
+## 앵귤러 시작
 
-* index.html 페이지 생성:
-
-```
-$ touch index.html
-```
-
-* index.html:
+* index.html 작성
 
 ```html
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -102,54 +71,64 @@ $ touch index.html
 </html>
 ```
 
-* NPM으로 앵귤러 설치:
+* Npm 으로 앵귤러 설치:
 
 ```
 $ npm install angular --save
 ```
-
-* index.html에 앵귤러 로딩
+* save 옵션을 주는 것은 이 프로젝트가 앵귤러 라이브러리를 사용한다는 것을 알리는 것
+* 이 정보는 package.json의 dependencies에 추가됨
+* 앵귤러 라이브러리를 로딩하고 **모듈(module)**, **컨트롤러(controller)** 생성
+* `ng-app`: 브라우져에게 앵귤러 모듈을 사용한다고 알림
+* `ng-controller`: 브라우져에게 앵귤러 컨트롤러를 사용한다고 알림
 
 ```html
-<!-- ng-app으로 todomvc 앵귤러 모듈 사용을 브라우저에게 알린다 -->
-<body ng-app="todomvc">
+<!-- index.html -->
+<html ng-app="todomvc">
+  <body ng-controller="TodomvcCtrl">
 
-<!-- 앵귤러 로딩 -->
-<script src="node_modules/angular/angular.js"></script>
-
-<script src="js/app.js"></script>
-</body>
+  <script src="node_modules/angular/angular.js"></script>
+  <script>
+    angular
+        .module('todomvc', [])
+        .controller('TodomvcCtrl', function ($scope) {
+          $scope.message = 'Hello wordl!';
+        });
+  </script>
+  </body>
+</html>
 ```
 
-* 앵귤러 모듈 정의 (js/app.js):
+## [TIP] brower-sync
 
-```javascript
-angular.module('todoapp', []);
+* [bower-sync](https://www.browsersync.io/)는 코드변호에 따라 브라우져를 리프레시 해주는 툴
+* 내부적으로 웹서버를 구동함
+* Npm을 이용해 글로벌로 설치
+
+```
+$ npm install -g browser-sync
+$ browser-sync start --server --files "./**/*"
 ```
 
-* 브라우져로 로딩하면 앵귤러 라이브러리와 우리가 만든 파일 두 개 (index.html, app.js)가 다운로드 됨
+## Controller
 
-
-## 3. 컨트롤러
-
-* html로 작성된 템플릿과 연결되어 데이터를 출력하고 사용자 입력을 처리하는 것이 컨트롤러의 역할
+* Html로 작성된 템플릿과 연결되어 데이터를 출력하고 사용자 입력을 처리하는 것이 컨트롤러의 역할
 * `angular.module().controller()` 함수로 컨트롤러 정의
-* js/controllers/TodomvcCtrl.js:
 
 ```javascript
+// js/controllers/TodomvcCtrl.js:
 angular.module('todomvc')
     .controller('TodomvcCtrl', function ($scope) {
-
       $scope.message = 'Hello world!';
-
     });
 ```
 
-* 컨트롤러스  생성과 동시에 스코프변수(`$scope`)가 자동으로 생서됨
-* 스코프 변수의 역할: 템플릿과 컨트롤러간의 데이터 연결
-* index.html에 스코프 변수 출력하기 (인터폴레이션 문법)
+* 컨트롤러스  생성과 동시에 스코프 변수(`$scope`)가 자동으로 생성됨
+* 이는 템플릿과 컨트롤러간의 연결을 위한 변수임
+* index.html에 스코프 변수 출력하기 (인터폴레이션)
 
 ```html
+<!-- index.html -->
 <body ng-controller="TodomvcCtrl">
   <p>
     {{ message }} <!-- "Hello world!" -->
@@ -158,15 +137,14 @@ angular.module('todomvc')
 
 ```
 
-## 4. 투두 목록 출력하기
+## 투두 목록 출력하기 (ngRepeat)
 
-* 컨트롤러에 배열 데이터 `todos` 만들기
-* js/controllers/TodomvcCtrl.js:
+* 컨트롤러에 배열 데이터 `$scope.todos` 만들기
 
 ```javascript
+// js/controllers/TodomvcCtrl.js
 angular.module('todomvc')
     .controller('TodomvcCtrl', function ($scope) {
-
       $scope.todos = [{
         id: 1,
         title: '요가 수행하기',
@@ -176,14 +154,13 @@ angular.module('todomvc')
         title: '어머니 용돈 드리기',
         completed: true
       }];
-
     });
 ```
 
-* ngRepeat으로 배열 출력하기
-* index.html:
+* `ngRepeat`으로 배열 출력하기
 
 ```html
+<!-- index.html -->
 <ul ng-repeat="todo in todos track by $index">
   <li>
       <input type="checkbox" ng-model="todo.completed">
@@ -193,20 +170,23 @@ angular.module('todomvc')
 </ul>
 ```
 
-* ngClick으로 삭제 기능 만들기
-* index.html:
+## 삭제 기능 만들기 (ngClick)
+
+* ngClick 디렉티브를 이용해 버튼의 클릭 이벤트 후킹
 
 ```html
+<!-- index.html -->
 <!-- ng-click 디렉티브로 컨트롤러의 remove() 함수와 연결했다. -->
 <button type="button" ng-click="remove(todo.id)">Remove</button>
 ```
 
-* js/controllers/TodomvcCtrl.js:
+* ngClick에 설정한 컨트롤러 함수를 이용해 이벤트 핸들러 구현
+
 
 ```javascript
+// js/controllers/TodomvcCtrl.js
 angular.module('todomvc')
     .controller('TodomvcCtrl', function ($scope) {
-
       $scope.remove = function (id) {
         if (!id) return;
 
@@ -224,29 +204,29 @@ angular.module('todomvc')
     });
 ```
 
-## 5. 새로운 투두 추가하기
+## 새로운 투두 추가하기 (ngForm)
 
 * 앵귤러로 폼 작성하기
-* index.html:
+* 폼에서 submit 이벤트 발생시 ngSubmit 디렉티브에 설정한 컨트롤러 함수가 동작하는 구조
+* 폼버튼을 만들고 ngSubmit에 컨트롤러 함수를 연결
 
 ```html
-<form ng-submit="addTodo(newTodo)">
-  <input type="text" ng-model="newTodo" placeholder="Type todos" autofocus>
+<!-- index.html -->
+<form ng-submit="add(newTodoTitle)">
+  <input type="text" ng-model="newTodoTitle" placeholder="Type todos" autofocus>
   <button type="submit">Add</button>
 </form>
 ```
 
-* 폼 입력 필드를 입력한 뒤 엔터를 입력하면 `ng-submit`에 바인딩된 컨트롤러 함수(`addTodo()`)가 동작함
-
-* 투두를 추가하는 컨트롤러함수 작성하기
+* ngSumbit에 연결된 컨트롤러 함수 구현
 
 ```javascript
+// js/controllers/TodomvcCtrl.js
 angular.module('todomvc')
     .controller('TodomvcCtrl', function ($scope) {
-
-      $scope.addTodo = function (todoTitle) {
-        todoTitle = todoTitle.trim();
-        if (!todoTitle) return;
+      $scope.addTodo = function (title) {
+        title = title.trim();
+        if (!title) return;
 
         // 새로 추가할 아이디 계산
         var newId = !$scope.todos.length ?
@@ -255,7 +235,7 @@ angular.module('todomvc')
         // 새로운 투두 객체
         var newTodo = {
           id: newId,
-          title: todoTitle,
+          title: title,
           completed: false
         };
 
@@ -265,9 +245,10 @@ angular.module('todomvc')
     });
 ```
 
-## 6. 부트스트랩으로 꾸미기
+## 스타일 입히기 (Twitter Bootstrap)
 
-* NPM으로 부트스트랩 설치
+* [Twitter Bootstrap](http://getbootstrap.com)은 반응형웹, 모바일 웹을 위한 스타일시트 라이브러리
+* Npm으로 부트스트랩 설치
 
 ```
 $ npm instsall bootstrap --save
@@ -275,13 +256,14 @@ $ npm instsall bootstrap --save
 * index.html에 라이브러리 로딩
 
 ```html
+<!-- index.html -->
 <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.css">
 ```
 
 * 부트스트랩 클래스 적용하기
 
-
 ```html
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -298,9 +280,9 @@ $ npm instsall bootstrap --save
 
   <ul class="list-unstyled">
     <li>
-      <form ng-submit="addTodo(newTodo)">
+      <form ng-submit="add(newTodoTitle)">
         <div class="input-group">
-          <input type="text" ng-model="newTodo" class="form-control"
+          <input type="text" ng-model="newTodoTitle" class="form-control"
                  placeholder="Type todos" autofocus>
           <span class="input-group-btn">
             <button class="btn btn-success" type="submit">Add</button>
@@ -311,21 +293,18 @@ $ npm instsall bootstrap --save
   </ul>
 
   <ul ng-repeat="todo in todos" class="list-unstyled">
-    <li class="todo-item">
+    <li>
       <div class="input-group">
         <span class="input-group-addon">
-          <input type="checkbox" aria-label="..." ng-model="todo.completed">
+          <input type="checkbox" ng-model="todo.completed">
         </span>
-        <input type="text" class="form-control" aria-label="..." ng-model="todo.title">
+        <input type="text" class="form-control" ng-model="todo.title">
         <div class="input-group-btn">
           <button class="btn btn-danger" ng-click="remove(todo.id)">Remove</button>
         </div>
       </div>
     </li>
   </ul>
-
-  <pre>{{todos | json}}</pre>
-
 </div>
 
 <script src="node_modules/angular/angular.js"></script>
@@ -696,3 +675,129 @@ angular.module('todomvc')
 ```
 
 ### [DIY] PUT/DELETE도 구현해 보자!
+
+
+
+
+
+
+------
+
+### Bower (skip)
+
+* [Bower](https://bower.io)는 웹 개발을 위한 패키지 매니져
+* Npm 으로도 대체할 수 있으나 웹 프론트엔드에 적합한 툴
+* 글로벌 옵션으로 설치:
+
+```
+$ npm install bower -g
+```
+
+### Gulp
+
+* [Gulp](https://github.com/gulpjs/gulp)는 프로젝트 빌드 시스템 툴
+* 자바스크립트를 하나의 파일로 합치거나, Sass를 css로 변경하는 등의 작업을 자동화 함
+* 글로벌 옵션으로 설치:
+
+```
+$ npm install gulp-cli -g
+```
+
+
+
+
+
+gulpfile.js
+
+```javascript
+const gulp = require('gulp');
+
+gulp.task('default', function () {
+  console.log('default task');
+});
+```
+
+```
+$ gulp
+default task
+```
+
+### Browser-sync
+
+* https://www.browsersync.io/docs/gulp
+
+```
+$ npm install browser-sync --save-dev
+```
+
+gulpfile.js:
+
+```javascript
+const gulp = require('gulp');
+const browserSync = require('browser-sync');
+
+gulp.task('client-watch', browserSync.reload);
+
+gulp.task('serve', function (){
+  browserSync.init({
+    server: {
+      baseDir: './client'
+    }
+  });
+
+  gulp.watch('./client/**/*.*', ['client-watch'])
+});
+
+gulp.task('default', ['serve']);
+```
+
+
+### Nodemon
+
+https://www.npmjs.com/package/gulp-nodemon
+
+```
+$ npm install gulp-nodemon --save-dev
+```
+
+gruntfile.js:
+
+```javascript
+const gulp = require('gulp');
+const browserSync = require('browser-sync');
+const nodemon = require('gulp-nodemon');
+
+gulp.task('nodemon', function (cb) {
+  var started= false;
+  nodemon({
+    script: 'server/app.js',
+    ext: 'js',
+    env: {
+      'NODE_ENV': 'development'
+    },
+    watch: ['./server']
+  }).on('start', function (){
+    if (!started) {
+      cb();
+      started = true;
+    }
+  }).on('restart', function () {
+    setTimeout(function () {
+      console.log('server restarted')
+      browserSync.reload();
+    });
+  });
+});
+
+gulp.task('browser-sync', ['nodemon'], function (){
+  browserSync.init({
+    files: ['./client/**/*.*'],
+    proxy: 'localhost:3000',
+    port: 4000
+  });
+
+  gulp.watch('./client/**/*.*', browserSync.reload)
+});
+
+gulp.task('default', ['browser-sync']);
+```
