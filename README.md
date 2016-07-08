@@ -99,7 +99,7 @@ $ npm install angular --save
 </html>
 ```
 
-## [TIP] brower-sync
+## [tip] brower-sync
 
 * [bower-sync](https://www.browsersync.io/)는 코드변호에 따라 브라우져를 리프레시 해주는 툴
 * 내부적으로 웹서버를 구동함
@@ -339,7 +339,7 @@ $ npm instsall bootstrap --save
 </div>
 ```
 
-## [DIY] Clear All 버튼 만들기
+## [diy] Clear All 버튼 만들기
 
 
 
@@ -371,7 +371,7 @@ angular.module('todomvc')
     });
 ```
 
-## [DIY] 필터버튼을 디렉티브로 분리
+## [diy] 필터버튼을 디렉티브로 분리
 
 
 ## 서비스
@@ -415,7 +415,7 @@ angular.module('todomvc')
     });
 ```
 
-## [DIY] add, delete, Clear Completed 도 서비스로 옮겨보자
+## [diy] add, delete, Clear Completed 도 서비스로 옮겨보자
 
 ## 서버와 클라이언트 코드 분리
 
@@ -430,7 +430,6 @@ angular.module('todomvc')
 /server
   app.js
 ```
-
 
 ## Express 웹서버 시작
 
@@ -465,56 +464,100 @@ $ node server/app
 Example app listening on port 3000!
 ```
 
+## [tip] nodemon
 
-## 11. Static Files
+* 자바스크립트 코드 변경을 감지하여 노드 서버를 재 실행하는 툴
+* npm 글로벌 옵션으로 설치
 
-* index.html 등 정적파일을 웹서버에서 호스팅해야함.
-* server.js
-
-```javascript
-app.use('/', express.static(path.join(__dirname, '../client')));
+```
+$ npm install nodemon -g
+$ node server/app
+[nodemon] 1.9.2
+[nodemon] to restart at any time, enter `rs`
+[nodemon] watching: *.*
+[nodemon] starting `node server/app.js`
+Example app listening on port 3000!
 ```
 
-* 홈페이지 라우팅 설정
+* nodemon + browserSync 연동
 
-```javascript
-app.get('/', function (req, res) {
-  res.sendfile('index.html');
-});
+```
+$ browser-sync start --proxy "localhost:3000" --files "client/**/*"
 ```
 
-* 라이브러리 파일도 호스팅 설정
+* npm으로 통합
+
+```json
+{
+  "scripts": {
+    "nodemon": "nodemon server/app",
+    "browser-sync": "browser-sync start --proxy localhost:3000 --files client/**/*"
+  }
+}
+```
+
+```
+$ npm run nodemon
+$ npm run browser-sync
+```
+
+## Static Files
+
+### 익스프레스 미들웨어
+
+* 익스프레스는 미들웨어를 통해 서버의 기능을 추가할 수 있음
+* app.use()를 이용해 미들웨어를 추가할 수 있음
+
+### express.static()
+
+* html, css, javascript 등 정적파일을 웹서버에서 호스팅해야 함
+* 익스프레스 객체는 이를 지원하는 static 미들웨어를 지원함 (express 객체가 지원하는 유일한 미들웨어 임)
+* 클라이언트가 요청한 주소값(req.url)에 의해 서버에 있는 파일 위치를 결정함
+* 예를 들어 localhost/index.html 주소로 요청할 경우 서버에서 설정한 정적파일 위치와 index.html을 조합하여 파일 위치를 찾음
 
 ```javascript
+// server/app.js
+app.use(express.static(path.join(__dirname, '../client')));
+```
+
+* 위의 경우 localhost/index.html 요청이 올 경우 서버의 client/indxe.html 파일을 찾아서 응답해 줌
+* node_modules 폴더에 있는 라이브러리 파일도 정적 파일로 설정해야 함
+* 특정 경로의 요청에 대한 정적파일 설정시 app.use() 함수의 첫번째 파라매터로 그 경로를 접두어로 설정할 수 있음
+
+```javascript
+// server/app.js
 app.use('/node_modules', express.static(path.join(__dirname, '../node_modules')));
 ```
 
-## 12. APIs
+* 클라이언트에서 localhost/node_modules/bootstrap.css 요청이 올경우 서버는 node_modules/bootstrap.css 파일을 찾아 응답해 줌
+
+## API
 
 * 클라이언트와 서버간의 데이터 교환을 위한 프로토콜 필요
-* 클라이언트는 Ajax를 이용해 서버로 데이터를 요청함
-* 이것이 APIs
-* 앵귤러 서비스는 ajax를 통해 서버로 데이터를 요청함
+* 클라이언트는 Ajax를 이용해 서버로 데이터를 요청하는데 이것을 API라고 함
+* 앵귤러는 $http 서비스를 이용해 ajax 통신을 처리함
 
 ### REST API
 
-* 서버 자원단위로 설계된 API
+* 서버의 자원(resource)단위로 설계된 API
 * 명사와 동사의 분리 (`GET /users` v.s `/get_users`)
 * 우리가 만들 api 목록
 
-method	|url	| function
---------|-----|---------
-POST	  | /api/todos	      | todo 생성
+method	|url	              | function
+--------|-------------------|---------------
 GET	    | /api/todos	      | todo 목록 조회
-PUT	    | /api/todos/:id	  |todo 갱신
-DELETE	| /api/todos/:id	  |todo 삭제
+POST	  | /api/todos	      | todo 생성
+PUT	    | /api/todos/:id	  | todo 갱신
+DELETE	| /api/todos/:id	  | todo 삭제
 
-### GET /api/todos 만들기
+### GET /api/todos
 
-* server/app.js:
+* 투두 목록을 조회하는 기능
+* 앵귤러로 만든 todoStorage의 배열을 백엔드로 이동
+* 익스프레스 객체(app)는 app.METHOD(path, callback) 형식의 메소드로 라우팅 로직을 구현
 
 ```javascript
-// 앵귤러 서비스쪽에 있던 배열을 노드 코드로 옮겼다.
+// server/app.js
 var todos = [{
   id: 1,
   title: 'todo 1',
@@ -535,35 +578,37 @@ app.get('/api/todos', function (req, res) {
 });
 ```
 
-### Postman
+## [tip] Postman
 
 * [다운로드](https://www.getpostman.com/)
 * REST API 개발 필수품
 
-### BodyParser
+## POST /api/todos
 
-* post 메쏘드는 데이터를 보낼때 http 바디에 그 정보를 저장함
-* express에서 리퀘스트 바디에 접속하기 위한 미들웨어
-* body-parser 설치:
+### body-parser
+
+* POST 메쏘드는 데이터를 보낼때 바디에 그 정보를 저장함
+* express에서 리퀘스트 바디에 접속하기 위해서는 body-parser 미들웨어가 필요함
+* body-paser 설치:
 
 ```
 $ npm isntall bady-parser --save
 ```
-$ server/app.js:
+
+* 익스프레스 엔진에 body-parser 추가
 
 ```javascript
+// server/app.js:
 var bodyParser = require('body-parser');
 
-// body parser
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 ```
 
-### POST /api/todos 만들기
-
-* server/app.js
+### POST /api/todos 구현
 
 ```javascript
+// server/app.js
 app.post('/api/todos', function (req, res) {
   if (!req.body.title) {
     return res.status(400).send();
@@ -584,32 +629,26 @@ app.post('/api/todos', function (req, res) {
 });
 ```
 
+## [diy] DELETE, PUT도 구현해 보자!
 
-### [DIY] Delete와 PUT은 직접 작성해보자!
+## 앵귤러에서 백엔드 API 사용하기 ($http)
 
-* 이것으로 서버의 두 가지 기능을 모두 구현했다.
-  * Static File
-  * APIs
-
-## 13. $http로 앵귤러 서비스 개선하기
-
-* 앵귤러 서비스에서 api 호출을 위해 `$http` 서비스 사용
-* js/services/todomvcStorage.js:
+* 앵귤러 서비스에서 api 호출을 위해 앵귤러 라이브러리의 $http 서비스 사용
+* $http는 ajax를 통신을 위한 목적
 
 ```javascript
+// js/services/todoStorage.js:
 angular.module('todomvc')
-    .factory('todomvcStorage', function ($http) {
+    .factory('todoStorage', function ($http) {
       var storage = {
 
         todos: [],
 
         get: function (callback) {
           $http.get('/api/todos')                 // GET /api/todos 요청
-              .then(function success(response) {  // 성공
-                console.log(response);
-                callback(null, angular.copy(response.data, storage.todos));
+              .then(function success(res) {       // 성공
+                callback(null, angular.copy(res.data, storage.todos));
               }, function error(err) {            // 실패
-                console.error(err);
                 callback(err);
               });
         },
@@ -617,26 +656,27 @@ angular.module('todomvc')
     });
 ```
 
-* 컨트롤러 코드 살짝 변경
-* js/controllers/TodomvcCtrl.js:
+* 서비스를 사용하는 컨트롤러 코드도 변경
 
 ```javascript
+// js/controllers/TodomvcCtrl.js
 angular.module('todomvc')
-    .controller('TodomvcCtrl', function ($scope, todomvcStorage) {
+    .controller('TodomvcCtrl', function ($scope, todoStorage) {
 
-      // 비동기 함수이미로 콜백 함수를 파라매터로 넘겼다.
+      // 비동기 함수라서 콜백 함수를 파라매터로 넘겼다.
       todomvcStorage.get(function (err, todos) {
         if (err) return;
         $scope.todos = todos;
       });
-
     });    
 
 ```
 
-### [DIY] PUT/DELETE도 구현해 보자!
+## [diy] DELETE와 PUT도 구현해 보자!
 
 
+## 테스트 (Mocha)
+## 빌드 (Bower)
 
 
 
