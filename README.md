@@ -315,79 +315,53 @@ $ npm instsall bootstrap --save
 </html>
 ```
 
-## 7. 투두 목록 필터링
+## 투두 목록 필터링 (ngRepeat filter)
 
-* 출력된 투두목록을 아래 기준으로 필터링해 보자
-  * `completed`: 완료된 투두 리스트
-  * `active`: 미완료된 투두 리스트
-  * `all`: 모든 투두 리스트
-
-* `ngRepeat`의 필터링 기능
-* index.html:
+* 출력된 투두목록을 다음 기준으로 필터링 해보자.
+* __completed__: 완료된 투두 리스트, __active__: 미완료된 투두 리스트, __all__: 모든 투두 리스트
+* ngRepeat의 필터링 기능을 이용
+* filter에 필터 조건을을 넣음
 
 ```html
+<!-- index.html -->
 <ul ng-repeat="todo in todos | filter: {completed: true}">
 ```
 
-* 필터 버튼 만들기
-* index.html:
+* 필터 버튼을 만들어 ngClick 디렉티브에 필터 변수값을 변경하는 코드 작성
 
 ```html
+<!-- index.html -->
+<ul ng-repeat="todo in todos | filter:statusFilter">
 <div class="btn-group" role="group" aria-label="...">
-  <button type="button" ng-click="status='completed'">Completed</button>
-  <button type="button" ng-click="status='active'">Active</button>
-  <button type="button" ng-click="status=''">All</button>
+  <button type="button" ng-click="status={completed:true}">Completed</button>
+  <button type="button" ng-click="status={completed:false}">Active</button>
+  <button type="button" ng-click="status={}">All</button>
 </div>
 ```
 
-* 버튼을 클릭할때 마다 `$scope.status` 변수의 값이 변경됨
-* 이 변수의 값에 따라 `$scope.statusFilter`에 ngRepeat을 위한 필터 객체를 할당함
-* index.html:
+## [DIY] Clear All 버튼 만들기
+
+
+
+## 디렉티브
+
+* [디렉티브](https://docs.angularjs.org/guide/directive)는 특별한 역할을 하는 돔(DOM) 엘레먼트
+* Jquery로 직접 돔을 조작하거나, 중복 코드를 리팩토링하거나, 새로운 마크업을 만들고 싶을때 사용함
+* 하나의 투두를 표현하는 코드 덩어리를 디렉티브로 만들어 보자
 
 ```html
-<ul ng-repeat="todo in todos | filter:statusFilter">
-```
-* `$scope.status`를 어떻게 변경 감지할까? `$watch()` 함수를 사용
-* 필터버튼을 클릭하고 `status` 값이 변경되면 `$watch()`에 등록한 함수가 동작함
-* js/controllers/TodomvcCtrl.js:
-
-```javascript
-
-$scope.$watch('status', function () {
-  if ($scope.status === 'completed') {        // if Completed 클릭시
-    $scope.statusFilter = {completed: true};  //   필터를 설정한다.
-  } else if ($scope.status === 'active') {    // if Active 클릭시
-    $scope.statusFilter = {completed: false}; //   필터를 설정한다.
-  } else {                                    // if All 클릭시
-    $scope.statusFilter = {};                 //   필터를 해제한다.
-  }
-});
-```
-
-### [DIY] Clear All 버튼 추가하기
-
-
-## 8. 디렉티브
-
-* 디렉티브는 html과 자바스크립트 코드로 이뤄지 마크업
-* 디렉티브를 잘 읽기 쉬운 코드를 만들 수 있고 재사용 가능함
-* 투두 템플릿을 디렉티브로 분리하자!
-* index.html:
-
-```html
-<ul ng-repeat="todo in todos | filter:statusFilter" class="list-unstyled">
-  <li class="todo-item">
-
-    <!-- 한 줄로 바꿔보자 ! -->
+<!-- index.html -->
+<ul ng-repeat="todo in todos | filter:status" class="list-unstyled">
+  <li>
     <todo-item></todo-item>
   </li>
 </ul>
 ```
 
-* `angular.module().directive()` 함수로 디렉티브 정의
-* js/directives/todoItem.js:
+* `angular.module().directive()` 함수로 todoItem 디렉티브 정의
 
 ```javascript
+// js/directives/todoItem.js
 angular.module('todomvc')
     .directive('todoItem', function () {
       return {
@@ -397,53 +371,20 @@ angular.module('todomvc')
     });
 ```
 
-* 컨트롤러 스코프 데이터를 디렉티브에 연결
-
-```html
-<todo-item todo="todo" remove="remove(todo.id)"></todo-item>
-```
-
-* 연결된 데이터를 디렉티브에서 출력
-
-```javascript
-angular.module('todomvc')
-    .directive('todoItem', function (){
-      return {
-        restrict: 'E',
-        scope: {        // 디렉티브 스코프 설정
-          todo: '=',    // 양방향 바인딩
-          remove: '&'   // 참고 바인딩. 함수 설정시 사용함
-        },
-        template:
-        '<div class="input-group">' +
-          '<span class="input-group-addon">' +
-            '<input type="checkbox" aria-label="..." ng-model="todo.completed" ng-click="update(todo)">' +
-          '</span>' +
-          '<input type="text" class="form-control" aria-label="..."' +
-            'ng-model="todo.title" ng-blur="update(todo)">' +
-          '<div class="input-group-btn">' +
-            '<button class="btn btn-danger" ng-click="remove(todo)">Remove</button>' +
-          '</div>' +
-        '</div>'
-      }
-    });
-```
-
-### [DIY] 필터버튼을 디렉티브로 분리해 보자!
+## [DIY] 필터버튼을 디렉티브로 분리
 
 
-## 9. 서비스
+## 서비스
 
 * 기존 컨트롤러에는 두개 기능이 섞여 있음
-  * 사용자 이벤트를 감지하고 템플릿에 데이터를 보내주는 역할, 즉 **템플릿과 직접 연결되는 부분**
-  * 그리고 todos 배열에서 투두를 제거하거나 추가하는 역할, 즉 **데이터를 핸들링 하는 부분** (-> 서비스로 분리)
+* 1) 사용자 이벤트를 감지하고 템플릿에 데이터를 보내주는 역할, 즉 **템플릿과 직접 연결되는 부분**
+* 2) todos 배열에서 투두를 제거하거나 추가하는 역할, 즉 **데이터를 핸들링 하는 부분** (-> 서비스로 분리)
 * `angular.module().factory()` 함수로 서비스 정의
-* js/services/todoStorage.js:
 
 ```javascript
+// js/services/todoStorage.js
 angular.module('todomvc')
-    .factory('todomvcStorage', function () {
-
+    .factory('todoStorage', function () {
       var storage = {
         todos: [{
           id: 1,
@@ -458,51 +399,70 @@ angular.module('todomvc')
         get: function () {
           return storage.todos;
         },
+      };
 
       return storage;
     });
 ```
 
 * 정의한 서비스를 컨트롤러에 주입하여 사용
-* js/controllers/TodomvcCtrl.js:
 
 ```javascript
+// js/controllers/TodomvcCtrl.js:
 angular.module('todomvc')
-    .controller('TodomvcCtrl', function ($scope, todomvcStorage) {
-
-      $scope.todos = todomvcStorage.get();
-
+    .controller('TodomvcCtrl', function ($scope, todoStorage) {
+      $scope.todos = todoStorage.get();
     });
 ```
 
-### [DIY] 추가, 삭제, Clear Completed 도 서비스로 옮겨보자!
+## [DIY] add, delete, Clear Completed 도 서비스로 옮겨보자
+
+## 서버와 클라이언트 코드 분리
+
+* 폴더 구조
+
+```
+/client
+  /controllers
+  /directives
+  /services
+  app.js
+/server
+  app.js
+```
 
 
-## 10. Express.js로 웹서버 만들기
+## Express 웹서버 시작
 
-* 웹서버의 기능
-  * 정적파일 호스팅
-  * API 기능
-* express 모듈 설치:
+* 웹서버의 기능: 1) 정적파일 호스팅, 2) API 기능
+* 정적 파일 강의 참고: [생활코딩 Express-정적파일을 서비스하는 법](https://opentutorials.org/course/2136/11857)
+* express 모듈 설치
 
 ```
 $ npm install express --save
 ```  
 
 * express 공식 사이트의 [hello world](http://expressjs.com/en/starter/hello-world.html) 코드 사용
-* npm으로 서버 구동하기
-* package.json:
 
-```json
-{
-  "scripts": {
-    "start": "node server/app"
-  }
-}
+```javascript
+// server/app.js
+var express = require('express');
+var app = express();
+
+app.get('/', function (req, res) {
+  res.send('Hello World!');
+});
+
+app.listen(3000, function () {
+  console.log('Example app listening on port 3000!');
+});
 ```
 
+* node 명령어로 서버 구동
+
 ```
-$ npm start
+$ node server/app
+Example app listening on port 3000!
 ```
 
 
