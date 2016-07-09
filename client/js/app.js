@@ -1,4 +1,1 @@
-angular.module('todomvc', [])
-    .config(function () {
-
-    });
+angular.module('todomvc', ['ngResource']);

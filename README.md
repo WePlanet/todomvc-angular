@@ -38,7 +38,7 @@ todomvc-angular
 * 노드 패키지를 프로젝트에 추가, 삭제하거나 직접 작성한 패키지를 배포할 때 사용함.
 * 본 프로젝트에서는 angularjs등 외부 라이브러리 설치시 사용
 * 노드를 설치하면 자동으로 NPM도 설치됨
-* *이후 Bower, Gulp 등 개발 툴은 상황에 따라 추가 설명할 예정*
+* 이후 Bower, Gulp 등 개발 툴은 상황에 따라 추가 설명할 예정
 
 ## 프로젝트 초기화
 
@@ -51,6 +51,7 @@ $ npm init
 
 * package.json: 프로젝트 정보를 담고 있음.
 * 특히 dependencies에는 프로젝트에서 사용하는 외부 라이브러리 정보가 기록됨
+* 다른 개발자가 `npm install`로 필요한 라이브러리를 한번에 설치할 수 있음
 
 ## 앵귤러 시작
 
@@ -76,7 +77,7 @@ $ npm init
 ```
 $ npm install angular --save
 ```
-* save 옵션을 주는 것은 이 프로젝트가 앵귤러 라이브러리를 사용한다는 것을 알리는 것
+* `--save` 옵션을 주는 것은 이 프로젝트가 앵귤러 라이브러리를 사용한다는 것을 알리는 것
 * 이 정보는 package.json의 dependencies에 추가됨
 * 앵귤러 라이브러리를 로딩하고 **모듈(module)**, **컨트롤러(controller)** 생성
 * `ng-app`: 브라우져에게 앵귤러 모듈을 사용한다고 알림
@@ -90,8 +91,8 @@ $ npm install angular --save
   <script src="node_modules/angular/angular.js"></script>
   <script>
     angular
-        .module('todomvc', [])
-        .controller('TodomvcCtrl', function ($scope) {
+        .module('todomvc', [])  // 모듈 정의
+        .controller('TodomvcCtrl', function ($scope) {  // 컨트롤러 정의
           $scope.message = 'Hello wordl!';
         });
   </script>
@@ -101,8 +102,8 @@ $ npm install angular --save
 
 ## [tip] brower-sync
 
-* [bower-sync](https://www.browsersync.io/)는 코드변호에 따라 브라우져를 리프레시 해주는 툴
-* 내부적으로 웹서버를 구동함
+* [bower-sync](https://www.browsersync.io/)는 코드변화에 따라 브라우져를 갱신하는 툴
+* 내부적으로 웹서버를 구동하여 index.html 파일을 호스팅함
 * Npm을 이용해 글로벌로 설치
 
 ```
@@ -123,8 +124,8 @@ angular.module('todomvc')
     });
 ```
 
-* 컨트롤러스  생성과 동시에 스코프 변수(`$scope`)가 자동으로 생성됨
-* 이는 템플릿과 컨트롤러간의 연결을 위한 변수임
+* 컨트롤러 생성과 동시에 스코프 변수(`$scope`)가 콜백함수의 파라매터로 넘어옴
+* 이는 템플릿과 컨트롤러간의 연결을 위한 변수
 * index.html에 스코프 변수 출력하기 (인터폴레이션)
 
 ```html
@@ -176,7 +177,6 @@ angular.module('todomvc')
 
 ```html
 <!-- index.html -->
-<!-- ng-click 디렉티브로 컨트롤러의 remove() 함수와 연결했다. -->
 <button type="button" ng-click="remove(todo.id)">Remove</button>
 ```
 
@@ -511,8 +511,8 @@ $ npm run browser-sync
 ### express.static()
 
 * html, css, javascript 등 정적파일을 웹서버에서 호스팅해야 함
-* 익스프레스 객체는 이를 지원하는 static 미들웨어를 지원함 (express 객체가 지원하는 유일한 미들웨어 임)
-* 클라이언트가 요청한 주소값(req.url)에 의해 서버에 있는 파일 위치를 결정함
+* 익스프레스 객체는 이를 지원하는 static 미들웨어를 지원함 (express 객체가 지원하는 유일한 미들웨어)
+* 클라이언트가 요청한 주소값(`req.url`)에 의해 서버에 있는 파일 위치를 결정함
 * 예를 들어 localhost/index.html 주소로 요청할 경우 서버에서 설정한 정적파일 위치와 index.html을 조합하여 파일 위치를 찾음
 
 ```javascript
@@ -543,7 +543,7 @@ app.use('/node_modules', express.static(path.join(__dirname, '../node_modules'))
 * 명사와 동사의 분리 (`GET /users` v.s `/get_users`)
 * 우리가 만들 api 목록
 
-method	|url	              | function
+Method	| Url	              | Role
 --------|-------------------|---------------
 GET	    | /api/todos	      | todo 목록 조회
 POST	  | /api/todos	      | todo 생성
@@ -588,7 +588,7 @@ app.get('/api/todos', function (req, res) {
 ### body-parser
 
 * POST 메쏘드는 데이터를 보낼때 바디에 그 정보를 저장함
-* express에서 리퀘스트 바디에 접속하기 위해서는 body-parser 미들웨어가 필요함
+* express에서 리퀘스트 바디에 접속하기 위해서는 [body-parser](http://expressjs.com/ko/4x/api.html#req.body) 미들웨어가 필요함
 * body-paser 설치:
 
 ```
@@ -674,130 +674,135 @@ angular.module('todomvc')
 
 ## [diy] DELETE와 PUT도 구현해 보자!
 
+## 라우팅 코드 리펙토링 (express.Router)
+
+* express.Router는 라우팅을 모듈화할 수 있는 클래스
+* 리소스 단위로 모듈화하여 라우팅 로직을 관리할 수 있음
+* 모듈화된 라우팅 로직은 익스프레스 객체에 마운트하여 사용할 수 있음
+* 폴더 구조 변경
+
+```
+/server
+  /api
+    todo.js // todo 리소스에 대한 라우팅 (/api/todos/*)
+    user.js // user 리소스에 대한 라우팅 (/api/users/*)
+  app.js    // 전체 라우팅 관리
+```
+
+```javascript
+// server/app.js
+app.use('/api/todos', require('./api/todo'));
+
+// server/api/todo.js
+var express = require('express');
+var router = express.Router();
+
+router.get('/', function (req, res) {
+
+});
+
+router.post('/', function (req, res) {
+
+});
+
+router.delete('/completed', function (req, res) {
+
+});
+
+router.delete('/:id', function (req, res) {
+
+});
+
+module.exports = router;
+```
+
+## REST API 위한 앵귤러 서비스 ngResource
+
+* [ngResource](https://docs.angularjs.org/api/ngResource)는 리소스 단위 API인 REST API와 함께 사용하는 앵귤러 서비스
+* $http 서비스로 만든 ajax 호출 로직을 한 단계 추상화하여 만들 수 있음
+
+```
+$ npm install angular-resourece --save
+```
+
+* 외부 앵귤러 모듈이므로 todomvc 모듈 정의시 이를 사용하기위해 모듈을 주입
+
+```javascript
+// client/js/app.js
+angular.module('todomvc', ['ngResource']);
+```
+
+* todoStorage 서비스 개선
+
+```javascript
+angular.module('todomvc')
+    .factory('todoStorage', function ($resource) {
+      var Todo = $resource('/api/todos/:id', {id: '@id'})
+
+      var storage = {
+        todos: [],
+
+        get: function () {
+          storage.todos = Todo.query();
+          return storage.todos;
+        },
+
+        create: function (title) {
+          return Todo.save({title: title})
+              .$promise
+              .then(function (data) {
+                storage.todos.push(data);
+              })
+        }
+      };
+
+      return storage;
+    });
+```
+
+## 데이터베이스
+
+### MongoDB
+* [MongoDB](https://www.mongodb.com/) NoSQL 데이터베이스
+* 설치: [OS X](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-os-x/), [Windows](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-windows/)
+* 데이테이베이스 실행
+
+```
+$ mongod // 데모 실행
+$ mongo  // 디비에 접속하여 쉘 실행
+```
+
+* 쿼리
+
+```
+> show dbs;         // 디비 목록 조회
+> use todomvc;      // 사용할 디비 선택
+> show collections; // 컬렉션 목록 조회
+> db.todos.find();  // 도큐멘트 목록 조회
+```
+
+### Mongoose
+
+* [mongoose](http://mongoosejs.com/)는 몽고디비를 사용한 ORM (Object-relational mapping)
+* 직접 몽고디비를 사용할 수도 있지만 추상화된 ORM 기능을 이용하여 빠르게 개발
+
+```
+$ npm install mongoose --save
+```
+
+* mongoose.model() 메소스로 모델링
+* todos 컬렉션에 저장됨
+
+```javascript
+var mongoose = require('mongoose');
+var Todo = mongoose.model('Todo', {
+  title: String,
+  completed: Boolean
+});
+```
+
 
 ## 테스트 (Mocha)
+
+
 ## 빌드 (Bower)
-
-
-
-
-------
-
-### Bower (skip)
-
-* [Bower](https://bower.io)는 웹 개발을 위한 패키지 매니져
-* Npm 으로도 대체할 수 있으나 웹 프론트엔드에 적합한 툴
-* 글로벌 옵션으로 설치:
-
-```
-$ npm install bower -g
-```
-
-### Gulp
-
-* [Gulp](https://github.com/gulpjs/gulp)는 프로젝트 빌드 시스템 툴
-* 자바스크립트를 하나의 파일로 합치거나, Sass를 css로 변경하는 등의 작업을 자동화 함
-* 글로벌 옵션으로 설치:
-
-```
-$ npm install gulp-cli -g
-```
-
-
-
-
-
-gulpfile.js
-
-```javascript
-const gulp = require('gulp');
-
-gulp.task('default', function () {
-  console.log('default task');
-});
-```
-
-```
-$ gulp
-default task
-```
-
-### Browser-sync
-
-* https://www.browsersync.io/docs/gulp
-
-```
-$ npm install browser-sync --save-dev
-```
-
-gulpfile.js:
-
-```javascript
-const gulp = require('gulp');
-const browserSync = require('browser-sync');
-
-gulp.task('client-watch', browserSync.reload);
-
-gulp.task('serve', function (){
-  browserSync.init({
-    server: {
-      baseDir: './client'
-    }
-  });
-
-  gulp.watch('./client/**/*.*', ['client-watch'])
-});
-
-gulp.task('default', ['serve']);
-```
-
-
-### Nodemon
-
-https://www.npmjs.com/package/gulp-nodemon
-
-```
-$ npm install gulp-nodemon --save-dev
-```
-
-gruntfile.js:
-
-```javascript
-const gulp = require('gulp');
-const browserSync = require('browser-sync');
-const nodemon = require('gulp-nodemon');
-
-gulp.task('nodemon', function (cb) {
-  var started= false;
-  nodemon({
-    script: 'server/app.js',
-    ext: 'js',
-    env: {
-      'NODE_ENV': 'development'
-    },
-    watch: ['./server']
-  }).on('start', function (){
-    if (!started) {
-      cb();
-      started = true;
-    }
-  }).on('restart', function () {
-    setTimeout(function () {
-      console.log('server restarted')
-      browserSync.reload();
-    });
-  });
-});
-
-gulp.task('browser-sync', ['nodemon'], function (){
-  browserSync.init({
-    files: ['./client/**/*.*'],
-    proxy: 'localhost:3000',
-    port: 4000
-  });
-
-  gulp.watch('./client/**/*.*', browserSync.reload)
-});
-
-gulp.task('default', ['browser-sync']);
-```
