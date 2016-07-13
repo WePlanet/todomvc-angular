@@ -1,23 +1,7 @@
 angular.module('todomvc')
-    .factory('todoStorage', function () {
+    .factory('todoStorage', function ($http) {
       var storage = {
-        todos: [
-          {
-            id: 1,
-            title: '요가수련',
-            completed: true
-          },
-          {
-            id: 2,
-            title: '코드랩',
-            completed: false
-          },
-          {
-            id: 3,
-            title: '운동',
-            completed: true
-          }
-        ],
+        todos: [],
 
         clearCompleted: function () {
           var incompletedTodos = storage.todos.filter(function (t) {
@@ -27,42 +11,36 @@ angular.module('todomvc')
         },
 
         remove: function (todoId) {
-          // find index of array
-          var idx = storage.todos.findIndex(function (t) {
-            return t.id === todoId;
-          });
+          // server data remove
+          $http.delete('/api/todos/' + todoId)
+              .then(function (res) {
+                // find index of array
+                var idx = storage.todos.findIndex(function (t) {
+                  return t.id === todoId;
+                });
 
-          if (idx === -1) return;
+                if (idx === -1) return;
 
-          // remove from array
-          stroage.todos.splice(idx, 1);
-
-          // var tmp = storage.todos.filter(function (t) {
-          //   return t.id !== todoId;
-          // });
-          //
-          // angular.copy(tmp, storage.todos);
+                // remove from array
+                storage.todos.splice(idx, 1);
+              });
         },
 
         post: function (title) {
-          // id 생성
-          var newId = storage.todos.length ?
-              storage.todos[storage.todos.length - 1].id + 1 :
-              1;
-
-          // new Todo
-          var newTodo = {
-            id: newId,
-            title: title,
-            completed: false
-          };
-
-          // add to array
-          storage.todos.push(newTodo);
+          $http.post('/api/todos', {title: title})
+              .then(function (res) {
+                storage.todos.push(res.data);
+              })
         },
 
-        get: function () {
-          return storage.todos;
+        get: function (callback) {
+          $http.get('/api/todos')
+              .then(function (res) {
+                storage.todos = res.data;
+                callback(null, storage.todos);
+              }, function (err) {
+                callback(err);
+              })
         },
       };
 

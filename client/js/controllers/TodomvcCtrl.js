@@ -16,5 +16,8 @@ angular.module('todomvc')
         todoStorage.remove(todoId);
       };
 
-      $scope.todos = todoStorage.get();
+      todoStorage.get(function (err, todos) {
+        if (err) return;
+        $scope.todos = todos;
+      });
     });
