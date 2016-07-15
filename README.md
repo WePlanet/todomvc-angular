@@ -804,5 +804,95 @@ var Todo = mongoose.model('Todo', {
 
 ## 테스트 (Mocha)
 
+### Mocha
 
-## 빌드 (Bower)
+* [mocha](https://mochajs.org/)
+
+```
+$ npm instal mocha --save-dev
+```
+
+```javascript
+// server/api/todo.spec.js
+var assert = require('assert');
+
+describe('test suite', function () {
+  it('test unit', function () {
+    assert.equal(true, true);
+  })
+});
+```
+
+```
+$ node_modules/.bin/mocha server/api/todo.spec.js
+
+  test suite
+    ✓ test unit
+
+  1 passing (9ms)
+```
+
+### Supertest
+
+* [supertest](https://github.com/visionmedia/supertest)
+
+```
+$ npm isntall supertest --save-dev
+```
+
+```javascript
+before('Init database', function (done) {
+  mongoose.connect('mongodb://localhost:27017/todomvc_test', function (err) {
+    if (err) throw err;
+    done();
+  });
+});
+
+after('Cleanup database', function (done) {
+  mongoose.connection.db.dropDatabase(function () {
+    done();
+  });
+});
+
+it('POST /api/todos should return new todo', function (done) {
+  request(app)
+      .post('/api/todos')
+      .send({title: 'new todo'})
+      .expect(200)
+      .end(function (err, res) {
+        if (err) throw err;
+        assert.equal(res.body.hasOwnProperty('_id'), true);
+        assert.equal(res.body.hasOwnProperty('title'), true);
+        assert.equal(res.body.hasOwnProperty('completed'), true);
+        done();
+      })
+});
+```
+
+## Should
+
+* [should](https://github.com/shouldjs/should.js)
+
+```
+$ npm install should --save-dev
+```
+
+```javascript
+res.body.should.have.properties('_id', 'title', 'completed');
+res.body._id.should.be.type('string');
+res.body.title.should.be.type('string');
+res.body.completed.should.be.type('boolean');
+```
+
+
+## Reference
+
+* [yeoman](http://yeoman.io/), The web's scaffolding tool
+* [angular-fullstack](https://github.com/angular-fullstack/generator-angular-fullstack)
+* [fullstack-demo](https://github.com/DaftMonk/fullstack-demo)
+* [UI Bootstrap](http://angular-ui.github.io/bootstrap/)
+
+
+
+
+### angular-fullstack
