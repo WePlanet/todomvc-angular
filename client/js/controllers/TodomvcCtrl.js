@@ -20,4 +20,9 @@ angular.module('todomvc')
         if (err) return;
         $scope.todos = todos;
       });
+
+      $scope.update = function (todo) {
+        console.log('update()');
+        todoStorage.update(todo);
+      };
     });

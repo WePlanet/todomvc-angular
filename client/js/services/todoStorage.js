@@ -1,13 +1,15 @@
 angular.module('todomvc')
-    .factory('todoStorage', function ($http) {
+    .factory('todoStorage', function ($http, $resource) {
+      var Todo = $resource('/api/todos/:id', {id: '@id'});
+      
       var storage = {
         todos: [],
 
         clearCompleted: function () {
-          var incompletedTodos = storage.todos.filter(function (t) {
-            return t.completed === false;
-          });
-          angular.copy(incompletedTodos, storage.todos);
+          $http.delete('/api/todos/completed')
+              .then(function (res) {
+                angular.copy(res.data, storage.todos);
+              })
         },
 
         remove: function (todoId) {
@@ -16,7 +18,7 @@ angular.module('todomvc')
               .then(function (res) {
                 // find index of array
                 var idx = storage.todos.findIndex(function (t) {
-                  return t.id === todoId;
+                  return t._id === todoId;
                 });
 
                 if (idx === -1) return;
@@ -34,14 +36,28 @@ angular.module('todomvc')
         },
 
         get: function (callback) {
-          $http.get('/api/todos')
-              .then(function (res) {
-                storage.todos = res.data;
-                callback(null, storage.todos);
-              }, function (err) {
-                callback(err);
-              })
+          // $http.get('/api/todos')
+          //     .then(function (res) {
+          //       storage.todos = res.data;
+          //       callback(null, storage.todos);
+          //     }, function (err) {
+          //       callback(err);
+          //     })
+
+          Todo.query().$promise.then(function (todos) {
+            callback(todos);
+          })
         },
+
+        update: function (todo) {
+          console.log('update() in todoStroage.js');
+          $http.put('/api/todos/' + todo._id, {title: todo.title, completed: todo.completed})
+              .then(function (res) {
+                console.log(res);
+              }, function (err) {
+                
+              })
+        }
       };
 
       return storage;
