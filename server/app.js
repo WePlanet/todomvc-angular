@@ -5,10 +5,12 @@ var logger = require('morgan');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 
-mongoose.connect('mongodb://localhost/todomvc_codelab', function (err, result) {
-  if (err) throw err;
-  console.log('connected mongodb!!');
-});
+if (process.env.NODE_ENV !== 'test') {
+  mongoose.connect('mongodb://localhost/todomvc_codelab', function (err, result) {
+    if (err) throw err;
+    console.log('connected mongodb!!');
+  });
+}
 
 app.use(express.static(path.join(__dirname, '../client')));
 app.use('/node_modules', express.static(path.join(__dirname, '../node_modules')));
@@ -20,3 +22,6 @@ app.use('/api', require('./api/todo.js'));
 app.listen(3000, function () {
   console.log('Example app listening on port 3000!');
 });
+
+// For unit test
+module.exports = app;

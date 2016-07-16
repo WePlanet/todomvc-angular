@@ -1,21 +1,32 @@
 angular.module('todomvc')
     .factory('todoStorage', function ($http, $resource) {
-      var Todo = $resource('/api/todos/:id', {id: '@id'});
+
+      var Todo = $resource('/api/todos/:id', {id: '@id'}, {
+        clearCompleted: {
+          method: 'DELETE',
+          isArray: true
+        },
+        update: {
+          method: 'PUT',
+          isArray: false
+        }
+      });
       
       var storage = {
         todos: [],
 
         clearCompleted: function () {
-          $http.delete('/api/todos/completed')
-              .then(function (res) {
-                angular.copy(res.data, storage.todos);
-              })
+          Todo.clearCompleted({id: 'completed'})
+              .$promise
+              .then(function (todos) {
+                angular.copy(todos, storage.todos);
+              });
         },
 
         remove: function (todoId) {
-          // server data remove
-          $http.delete('/api/todos/' + todoId)
-              .then(function (res) {
+          Todo.delete({id: todoId})
+              .$promise
+              .then(function () {
                 // find index of array
                 var idx = storage.todos.findIndex(function (t) {
                   return t._id === todoId;
@@ -29,34 +40,21 @@ angular.module('todomvc')
         },
 
         post: function (title) {
-          $http.post('/api/todos', {title: title})
-              .then(function (res) {
-                storage.todos.push(res.data);
-              })
+          Todo.save({title: title})
+              .$promise
+              .then(function (data) {
+                console.log(data);
+                storage.todos.push(data);
+              });
         },
 
-        get: function (callback) {
-          // $http.get('/api/todos')
-          //     .then(function (res) {
-          //       storage.todos = res.data;
-          //       callback(null, storage.todos);
-          //     }, function (err) {
-          //       callback(err);
-          //     })
-
-          Todo.query().$promise.then(function (todos) {
-            callback(todos);
-          })
+        get: function () {
+          storage.todos = Todo.query();
+          return storage.todos;
         },
 
         update: function (todo) {
-          console.log('update() in todoStroage.js');
-          $http.put('/api/todos/' + todo._id, {title: todo.title, completed: todo.completed})
-              .then(function (res) {
-                console.log(res);
-              }, function (err) {
-                
-              })
+          Todo.update({id: todo._id}, todo);
         }
       };
 

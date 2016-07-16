@@ -16,13 +16,9 @@ angular.module('todomvc')
         todoStorage.remove(todoId);
       };
 
-      todoStorage.get(function (err, todos) {
-        if (err) return;
-        $scope.todos = todos;
-      });
+      $scope.todos = todoStorage.get();
 
       $scope.update = function (todo) {
-        console.log('update()');
         todoStorage.update(todo);
       };
     });
